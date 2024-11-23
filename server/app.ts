@@ -4,6 +4,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import { errorMiddleware } from "./middlewares/error";
 import { config } from "dotenv";
+import userRouter from "./routes/user.route";
 config();
 
 app.use(express.json({ limit: "50mb" }));
@@ -13,6 +14,7 @@ app.use(
     origin: process.env.ORIGIN,
   })
 );
+app.use("/api/v1", userRouter);
 app.get("/test", (req: Request, res: Response, next: NextFunction) => {
   res.status(200).json({
     success: true,
