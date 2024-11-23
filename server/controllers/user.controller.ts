@@ -7,6 +7,7 @@ import dotenv from "dotenv";
 import ejs from "ejs";
 import path from "path";
 import sendEmail from "../utils/sendMail";
+import { sendToken } from "../utils/jwt";
 dotenv.config();
 
 //register
@@ -109,6 +110,52 @@ export const activateUser = catchAsyncError(
         success: true,
         message: "Account activated successfully",
         user,
+      });
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 500));
+    }
+  }
+);
+
+interface ILoginRequest {
+  email: string;
+  password: string;
+}
+export const loginUser = catchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { email, password } = req.body as ILoginRequest;
+      if (!email || !password) {
+        return next(new ErrorHandler("Please provide all fields", 400));
+      }
+      const user = await userModel.findOne({ email }).select("+password");
+      if (!user) {
+        return next(new ErrorHandler("User not found", 404));
+      }
+      const isMatch = await user.comparePassword(password);
+      if (!isMatch) {
+        return next(new ErrorHandler("Incorrect email or password", 400));
+      }
+      sendToken(user, 200, res);
+    } catch (error: any) {
+      console.log("🚀 ~ error:", error);
+      return next(new ErrorHandler(error.message, 500));
+    }
+  }
+);
+
+export const logoutUser = catchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      res.cookie("accessToken", "", {
+        maxAge: 1,
+      });
+      res.cookie("refreshToken", "", {
+        maxAge: 1,
+      });
+      res.status(200).json({
+        success: true,
+        message: "Logged out successfully",
       });
     } catch (error: any) {
       return next(new ErrorHandler(error.message, 500));
