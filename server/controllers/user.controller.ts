@@ -271,12 +271,12 @@ export const updateUserInfo = catchAsyncError(
           return next(new ErrorHandler("Email already exists", 400));
         }
         user.email = email;
-        if (name && user) {
-          user.name = name;
-        }
-        await user.save();
-        await redis.set(userId, JSON.stringify(user));
       }
+      if (name && user) {
+        user.name = name;
+      }
+      await user?.save();
+      await redis.set(userId, JSON.stringify(user));
       res.status(200).json({
         success: true,
         message: "User info updated successfully",
