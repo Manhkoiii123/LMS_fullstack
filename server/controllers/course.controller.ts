@@ -4,6 +4,7 @@ import ErrorHandler from "../utils/ErrorHandler";
 import cloudinary from "cloudinary";
 import { createCourse } from "../services/course.service";
 import { courseModel } from "../models/course.model";
+import { redis } from "../utils/redis";
 
 // upload course
 export const uploadCourse = catchAsyncError(
@@ -57,6 +58,67 @@ export const editCourse = catchAsyncError(
         success: true,
         course,
       });
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 500));
+    }
+  }
+);
+
+// lấy cho tất cả mọi gngười đều xem được
+export const getSingleCourse = catchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const courseId = req.params.id;
+      const isCacheExist = await redis.get(courseId);
+      if (isCacheExist) {
+        const course = JSON.parse(isCacheExist);
+        res.status(200).json({
+          success: true,
+          course,
+        });
+        return;
+      } else {
+        const course = await courseModel
+          .findById(courseId)
+          .select(
+            "-courseData.videoUrl -courseData.suggestion -courseData.questions -courseData.links "
+          );
+        await redis.set(courseId, JSON.stringify(course));
+        res.status(200).json({
+          success: true,
+          course,
+        });
+      }
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 500));
+    }
+  }
+);
+
+// get all courses lấy cho tất cả mọi gngười đều xem được
+export const getAllCourses = catchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const isCacheExist = await redis.get("allCourses");
+      if (isCacheExist) {
+        const courses = JSON.parse(isCacheExist);
+        res.status(200).json({
+          success: true,
+          courses,
+        });
+        return;
+      } else {
+        const courses = await courseModel
+          .find()
+          .select(
+            "-courseData.videoUrl -courseData.suggestion -courseData.questions -courseData.links "
+          );
+        await redis.set("allCourses", JSON.stringify(courses));
+        res.status(200).json({
+          success: true,
+          courses,
+        });
+      }
     } catch (error: any) {
       return next(new ErrorHandler(error.message, 500));
     }
