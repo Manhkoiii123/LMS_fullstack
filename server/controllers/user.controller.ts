@@ -13,6 +13,7 @@ import {
   sendToken,
 } from "../utils/jwt";
 import { redis } from "../utils/redis";
+import { getUserById } from "../services/user.service";
 dotenv.config();
 
 //register
@@ -208,6 +209,18 @@ export const updateAccessToken = catchAsyncError(
         message: "Access token updated successfully",
         accessToken,
       });
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 500));
+    }
+  }
+);
+
+//get user info
+export const getUserInfo = catchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const userId = req.user?._id || "";
+      getUserById(userId, res);
     } catch (error: any) {
       return next(new ErrorHandler(error.message, 500));
     }
