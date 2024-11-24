@@ -4,6 +4,7 @@ import { authorizeRoles, isAuthenticated } from "../middlewares/auth";
 import {
   editCourse,
   getAllCourses,
+  getCourseByUser,
   getSingleCourse,
   uploadCourse,
 } from "../controllers/course.controller";
@@ -24,4 +25,6 @@ courseRouter.put(
 
 courseRouter.get("/get-course/:id", getSingleCourse);
 courseRouter.get("/get-courses", getAllCourses);
+// vào trang khóa học để học (đã mua)
+courseRouter.get("/get-course-content/:id", isAuthenticated, getCourseByUser);
 export default courseRouter;

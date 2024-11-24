@@ -124,3 +124,27 @@ export const getAllCourses = catchAsyncError(
     }
   }
 );
+
+// lấy tt 1 khóa học cho ng đã mua (trả ra thông tin video)
+export const getCourseByUser = catchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const userCourseList = req.user?.courses;
+      const courseId = req.params.id;
+      const courseExists = userCourseList?.find(
+        (course) => course.courseId.toString() === courseId
+      );
+      if (!courseExists) {
+        return next(new ErrorHandler("You have not bought this course", 404));
+      }
+      const course = await courseModel.findById(courseId);
+      const content = course?.courseData;
+      res.status(200).json({
+        success: true,
+        content,
+      });
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 500));
+    }
+  }
+);
