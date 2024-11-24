@@ -14,6 +14,7 @@ import {
 } from "../utils/jwt";
 import { redis } from "../utils/redis";
 import { getUserById } from "../services/user.service";
+import cloudinary from "cloudinary";
 dotenv.config();
 
 //register
@@ -280,6 +281,74 @@ export const updateUserInfo = catchAsyncError(
       res.status(200).json({
         success: true,
         message: "User info updated successfully",
+        user,
+      });
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 500));
+    }
+  }
+);
+
+//update user password
+interface IUpdatePassword {
+  oldPassword: string;
+  newPassword: string;
+}
+export const updateUserPassword = catchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { oldPassword, newPassword } = req.body as IUpdatePassword;
+      const user = await userModel.findById(req.user?._id).select("+password");
+      if (user?.password === undefined) {
+        return next(new ErrorHandler("User not found", 404));
+      }
+      const isPasswordMatched = await user?.comparePassword(oldPassword);
+      if (!isPasswordMatched) {
+        return next(new ErrorHandler("Invalid old password", 400));
+      }
+      user.password = newPassword;
+      await user?.save();
+      await redis.set(user?._id, JSON.stringify(user));
+      res.status(200).json({
+        success: true,
+        message: "Password updated successfully",
+      });
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 500));
+    }
+  }
+);
+
+interface IUpdateProfilePicture {
+  avatar: string;
+}
+
+//update user avatar
+export const updateUserAvatar = catchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { avatar } = req.body as IUpdateProfilePicture;
+      const userid = req.user?._id || "";
+      const user = await userModel.findById(userid);
+      if (avatar && user) {
+        if (user?.avatar?.public_id) {
+          await cloudinary.v2.uploader.destroy(user?.avatar?.public_id);
+        }
+        const myCloud = await cloudinary.v2.uploader.upload(avatar, {
+          folder: "avatars",
+          width: 150,
+          crop: "scale",
+        });
+        user.avatar = {
+          public_id: myCloud.public_id,
+          url: myCloud.secure_url,
+        };
+      }
+      await user?.save();
+      await redis.set(userid, JSON.stringify(user));
+      res.status(200).json({
+        success: true,
+        message: "Avatar updated successfully",
         user,
       });
     } catch (error: any) {
