@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Order Details</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background: #f4f4f4;
+        color: #333;
+      }
+      .container {
+        max-width: 800px;
+        margin: 50px auto;
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        overflow: hidden;
+      }
+      .content {
+        padding: 20px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+      table th,
+      table td {
+        border: 1px solid #ddd;
+        padding: 12px;
+        text-align: left;
+      }
+      table th {
+        background: #4caf50;
+        color: #fff;
+      }
+      table tr:nth-child(even) {
+        background: #f9f9f9;
+      }
+      table tr:hover {
+        background: #f1f1f1;
+      }
+      .footer {
+        background-color: #f4f4f9;
+        padding: 10px;
+        text-align: center;
+        font-size: 14px;
+        color: #777;
+      }
+      .footer a {
+        color: #3a71d5;
+        text-decoration: none;
+      }
+      .header {
+        background-color: #3a71d5;
+        color: white;
+        padding: 20px;
+        text-align: center;
+      }
+      .header h1 {
+        margin: 0;
+        font-size: 24px;
+      }
+      .sub-header {
+        text-align: center;
+        font-size: 16px;
+        color: #fff;
+        margin-top: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>Your ELearning order is confirmed!</h1>
+        <p class="sub-header">And we're just as excited as you are.</p>
+      </div>
+      <div class="content">
+        <table>
+          <tr>
+            <th>Field</th>
+            <th>Value</th>
+          </tr>
+          <tr>
+            <td>Order ID</td>
+            <td><%= order._id %></td>
+          </tr>
+          <tr>
+            <td>Course Name</td>
+            <td><%= order.name %></td>
+          </tr>
+          <tr>
+            <td>Price</td>
+            <td>$<%= order.price %></td>
+          </tr>
+          <tr>
+            <td>Order Date</td>
+            <td><%= order.date %></td>
+          </tr>
+        </table>
+      </div>
+      <div class="footer">
+        <p>
+          If you have any questions, please contact our support team at
+          <a href="mailto:manhtranduc0202@gmail.com"
+            >manhtranduc0202@gmail.com</a
+          >.
+        </p>
+        <p>&copy; 2023 Elearning. All rights reserved.</p>
+      </div>
+    </div>
+  </body>
+</html>
