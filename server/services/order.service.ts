@@ -1,5 +1,4 @@
-import mongoose, { Schema, model, Document } from "mongoose";
-import { NextFunction } from "express";
+import { NextFunction, Response } from "express";
 import { catchAsyncError } from "../middlewares/catchAsyncError";
 import { orderModel } from "../models/order.model";
 export const newOrder = catchAsyncError(
@@ -8,3 +7,8 @@ export const newOrder = catchAsyncError(
     next(order);
   }
 );
+
+export const getAllOrderService = async (res: Response) => {
+  const orders = await orderModel.find().sort({ createdAt: -1 });
+  res.status(200).json({ success: true, orders });
+};
