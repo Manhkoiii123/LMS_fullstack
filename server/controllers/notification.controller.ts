@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { notificationModel, INotification } from "../models/notification.model";
 import ErrorHandler from "../utils/ErrorHandler";
+import cron from "node-cron";
 import { catchAsyncError } from "../middlewares/catchAsyncError";
 export const getNotifications = catchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -42,3 +43,13 @@ export const updateNotification = catchAsyncError(
     }
   }
 );
+
+//delete cron job => delete các cái đã đọc theo thời gian cố định
+//công việc này sẽ chạy mỗi ngày vào lúc nửa đêm => 0 0 0 * * *
+cron.schedule("0 0 0 * * *", async () => {
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+  await notificationModel.deleteMany({
+    status: "read",
+    createdAt: { $lt: thirtyDaysAgo },
+  });
+});
