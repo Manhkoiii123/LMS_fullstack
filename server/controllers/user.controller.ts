@@ -13,7 +13,11 @@ import {
   sendToken,
 } from "../utils/jwt";
 import { redis } from "../utils/redis";
-import { getUserById } from "../services/user.service";
+import {
+  getAllUsersService,
+  getUserById,
+  updateUserRoleService,
+} from "../services/user.service";
 import cloudinary from "cloudinary";
 dotenv.config();
 
@@ -350,6 +354,54 @@ export const updateUserAvatar = catchAsyncError(
         success: true,
         message: "Avatar updated successfully",
         user,
+      });
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 500));
+    }
+  }
+);
+
+//admin
+export const getAllUsers = catchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      getAllUsersService(res);
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 500));
+    }
+  }
+);
+
+// update role admin
+
+interface IUpdateUserRole {
+  id: string;
+  role: string;
+}
+export const updateUserRole = catchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id, role } = req.body as IUpdateUserRole;
+      updateUserRoleService(res, id, role);
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 500));
+    }
+  }
+);
+export const deleteUser = catchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const userId = req.params.id;
+
+      const user = await userModel.findById(userId);
+      if (!user) {
+        return next(new ErrorHandler("User not found", 404));
+      }
+      await user.deleteOne({ _id: userId });
+      await redis.del(userId);
+      res.status(200).json({
+        success: true,
+        message: "User deleted successfully",
       });
     } catch (error: any) {
       return next(new ErrorHandler(error.message, 500));
